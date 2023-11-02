@@ -15,3 +15,19 @@ Site.Master        BUILTIN\Administrators BUILTIN\IIS_IUSRS Allow  ReadAndExecut
 Site.Mobile.Master BUILTIN\Administrators BUILTIN\IIS_IUSRS Allow  ReadAndExecute, Synchronize...
 ViewSwitcher.ascx  BUILTIN\Administrators BUILTIN\IIS_IUSRS Allow  ReadAndExecute, Synchronize...
 Web.config         BUILTIN\Administrators BUILTIN\IIS_IUSRS Allow  ReadAndExecute, Synchronize...
+
+---------------------------------------------------
+SHORT WRITEUP
+- The second parameter in **Path.Combine()** can be controlled, so we can pass an absolute path => Bypass check ..
+- To obtain the running path, access **/Test/zeroTestPage?debug=1** because the file **file_does_not_exist** does not exist, and in the **Web.config**, **<customErrors mode="Off"/>** is set, so the error is displayed and contains the path to the webroot (C:\inetpub\wwwroot).
+- Note that all folders and files have only "ReadAndExecute" permissions except for Uploads (FullControl) and Test (Modify) because I set permissions for the entire **wwwroot** directory and then only edit permissions for the **Uploads **and **Test **folders, so the **zeroTestPage.aspx** file will keep "ReadAndExecute" permission.
+- Create an arbitrary DLL file (webshell) with the class named **ReadNoFlag**, and the file name must start with the letter 'z', with the second character in the file name being the character following 'e' (any character from f to z, case-insensitive). Explanation: Because "zeroTestPage.aspx" is set to have only "ReadAndExecute" permission => no delete permission, when the file is created as described, it will be sorted below the "zeroTestPage.aspx" file when extracted. When the program attempts to delete the "zeroTestPage.aspx" file, it stops, and in the end, we have just uploaded without being deleted.
+- Zip the file and upload it to the "C:\inetpub\wwwroot\Test" folder.
+
+Example:
+zexploit.dll (webshell file)
+zeroTestPage.aspx (zeroTestPage.aspx file in Test folder)
+
+z = z
+e = e
+x > r => it will be sorted below zeroTestPage.aspx file.
